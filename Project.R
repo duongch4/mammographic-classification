@@ -308,54 +308,64 @@ Kfold_CV_knn <- function(data, response = "response", k_fold = 5, N = 10, seed =
   return(mspe)
 }
 
-system.time(
-  result.knn.1 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.1","knn.3","knn.5"))
-)
+##### ATTENTION!!!!! ######
+##### I comment out this section because it takes a long time to train KNN, maybe there is a faster way to do!!! #####
 
-# user   system  elapsed 
-# 29009.23    22.00 31351.62 
+# system.time(
+#   result.knn.1 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.1","knn.3","knn.5"))
+# )
+# 
+# # user   system  elapsed 
+# # 29009.23    22.00 31351.62 
+# 
+# saveRDS(result.knn.1, "result_kcv_knn_noDensity.rds")
+# 
+# result_knn <- readRDS("knn_withoutDensity.rds")
+# 
+# 
+# system.time(
+#   result.knn.2 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Density","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.1","knn.3","knn.5"))
+# )
+# saveRDS(result.knn.2, "result_kcv_knn_Density.rds")
+# 
+# 
+# system.time(
+#   result.9nn <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.9"))
+# )
+# saveRDS(result.9nn, "result_kcv_9nn_NoDensity.rds")
+# 
+# 
+# system.time(
+#   result.knn.11.13.15 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.11","knn.13","knn.15"))
+# )
+# saveRDS(result.knn.11.13.15, "result_kcv_11_13_15nn_NoDensity.rds")
+# 
+# 
+# # Plotting: only the case without Density
+# # Load result ----
+# result <- as.data.table(readRDS("result_KCV.rds"))
+# result.knn.noDensity <- as.data.table(readRDS("result_kcv_knn_noDensity.rds"))
+# 
+# naList <- list()
+# for (i in 1:3) {naList[[i]] <- rep(NA,30)}
+# names(naList) <- c("knn.1","knn.3","knn.5")
+# naList <- as.data.table(naList)
+# 
+# result.knn <- rbind(result.knn.noDensity, naList)
+# 
+# result <- cbind(result, result.knn)
+# names(result) <- c("Logistic Regression", "LDA", "QDA",
+#                         "SVM-Linear", "SVM-Radial",
+#                         "Random Forest",
+#                         "AdaBoost-1", "AdaBoost-2", "AdaBoost-3",
+#                         "1-NN", "3-NN", "5-NN")
+# View((colMeans(result, na.rm = TRUE)))
 
-saveRDS(result.knn.1, "result_kcv_knn_noDensity.rds")
-
-result_knn <- readRDS("knn_withoutDensity.rds")
-
-
-system.time(
-  result.knn.2 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Density","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.1","knn.3","knn.5"))
-)
-saveRDS(result.knn.2, "result_kcv_knn_Density.rds")
-
-
-system.time(
-  result.9nn <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.9"))
-)
-saveRDS(result.9nn, "result_kcv_9nn_NoDensity.rds")
-
-
-system.time(
-  result.knn.11.13.15 <- Kfold_CV_knn(data = myData[,.SD,.SDcols=c("Age","Shape","Margin","Class")], response = "Class", k_fold = 5, N = 20, seed = 2017, models = c("knn.11","knn.13","knn.15"))
-)
-saveRDS(result.knn.11.13.15, "result_kcv_11_13_15nn_NoDensity.rds")
-
-
-# Plotting: only the case without Density
-# Load result ----
-result <- as.data.table(readRDS("result_KCV.rds"))
-result.knn.noDensity <- as.data.table(readRDS("result_kcv_knn_noDensity.rds"))
-
-naList <- list()
-for (i in 1:3) {naList[[i]] <- rep(NA,30)}
-names(naList) <- c("knn.1","knn.3","knn.5")
-naList <- as.data.table(naList)
-
-result.knn <- rbind(result.knn.noDensity, naList)
-
-result <- cbind(result, result.knn)
+result <- cbind(result)
 names(result) <- c("Logistic Regression", "LDA", "QDA",
                         "SVM-Linear", "SVM-Radial",
                         "Random Forest",
-                        "AdaBoost-1", "AdaBoost-2", "AdaBoost-3",
-                        "1-NN", "3-NN", "5-NN")
+                        "AdaBoost-1", "AdaBoost-2", "AdaBoost-3")
 View((colMeans(result, na.rm = TRUE)))
 
 # Plot
@@ -365,4 +375,4 @@ result <- melt(data = as.data.table(result),
 
 Boxplot(data = result,
         PlotTitle = "5-fold Cross Validation",
-        filename = paste(currentStorage, "Fig", "result_5foldCV", sep = "/"))
+        filename = paste(currentStorage, "fig", "result_5foldCV", sep = "/"))
